@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WireShark – Tutorial DNS e Tracert</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:        #f8f9fb;
+      --surface:   #ffffff;
+      --border:    #dde1e9;
+      --accent:    #1a6fc4;
+      --accent-lt: #e8f0fb;
+      --accent2:   #0e9e6e;
+      --accent2-lt:#e6f7f1;
+      --warn:      #d97706;
+      --warn-lt:   #fef3c7;
+      --danger:    #dc2626;
+      --text:      #1e2330;
+      --muted:     #6b7280;
+      --code-bg:   #f1f3f8;
+      --radius:    10px;
+      --shadow:    0 2px 10px rgba(0,0,0,.07);
+    }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ── Layout ── */
+    .page-wrap { max-width: 900px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1a3a6b 0%, #1a6fc4 100%);
+      color: #fff;
+      padding: 3rem 1.5rem 2.5rem;
+      margin-bottom: 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      right: -60px; bottom: -60px;
+      width: 260px; height: 260px;
+      background: rgba(255,255,255,.06);
+      border-radius: 50%;
+    }
+    .header-inner { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: 20px;
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      padding: .25rem .75rem;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+    }
+    header h1 { font-size: 2rem; font-weight: 700; margin-bottom: .5rem; }
+    header p  { font-size: 1rem; opacity: .85; max-width: 640px; }
+
+    /* ── Navigation pills ── */
+    .toc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-bottom: 2.5rem;
+    }
+    .toc a {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--accent);
+      font-size: .82rem;
+      font-weight: 600;
+      padding: .35rem .9rem;
+      text-decoration: none;
+      transition: background .18s, color .18s;
+    }
+    .toc a:hover { background: var(--accent); color: #fff; }
+
+    /* ── Tutorial label ── */
+    .tutorial-label {
+      display: inline-block;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: .2rem .6rem;
+      border-radius: 12px;
+      margin-bottom: .6rem;
+    }
+    .label-blue  { background: var(--accent-lt); color: var(--accent); }
+    .label-green { background: var(--accent2-lt); color: #065f46; }
+
+    /* ── Section cards ── */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2rem 2rem 1.75rem;
+      margin-bottom: 2rem;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: 1.25rem;
+    }
+    .section-icon {
+      width: 40px; height: 40px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .icon-blue  { background: var(--accent-lt); }
+    .icon-green { background: var(--accent2-lt); }
+    .icon-warn  { background: var(--warn-lt); }
+    .section h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .section h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 1.5rem 0 .5rem;
+    }
+    .section p  { margin-bottom: .85rem; }
+    .section ul, .section ol {
+      padding-left: 1.4rem;
+      margin-bottom: .85rem;
+    }
+    .section li { margin-bottom: .35rem; }
+
+    /* ── Info / Note boxes ── */
+    .info-box {
+      border-left: 4px solid var(--accent);
+      background: var(--accent-lt);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: .85rem 1rem;
+      margin: 1rem 0;
+      font-size: .93rem;
+    }
+    .warn-box {
+      border-left: 4px solid var(--warn);
+      background: var(--warn-lt);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: .85rem 1rem;
+      margin: 1rem 0;
+      font-size: .93rem;
+    }
+    .success-box {
+      border-left: 4px solid var(--accent2);
+      background: var(--accent2-lt);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: .85rem 1rem;
+      margin: 1rem 0;
+      font-size: .93rem;
+    }
+    .info-box strong, .warn-box strong, .success-box strong { display: block; margin-bottom: .25rem; }
+
+    /* ── Code ── */
+    code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: .88rem;
+      padding: .1rem .35rem;
+    }
+    pre {
+      background: #1e2330;
+      color: #e2e8f0;
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+      overflow-x: auto;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: .88rem;
+      line-height: 1.6;
+      margin: .75rem 0 1rem;
+    }
+    pre .c { color: #7dd3a8; }
+    pre .k { color: #93c5fd; }
+    pre .s { color: #fbbf24; }
+    pre .v { color: #f9a8d4; }
+
+    /* ── Step list ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; }
+    .steps li {
+      counter-increment: step;
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      align-items: flex-start;
+    }
+    .steps li::before {
+      content: counter(step);
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .82rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: .15rem;
+    }
+    .steps li .step-body { flex: 1; }
+    .steps li .step-body strong { display: block; margin-bottom: .25rem; }
+
+    /* ── Checklist ── */
+    .checklist { list-style: none; padding: 0; }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: .6rem;
+      margin-bottom: .55rem;
+      font-size: .95rem;
+    }
+    .checklist li .check {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: .15rem;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .checklist li.done .check {
+      background: var(--accent2);
+      border-color: var(--accent2);
+    }
+    .checklist li.done .check::after { content: '✓'; color: #fff; font-size: .75rem; font-weight: 700; }
+    .checklist li.done span { text-decoration: line-through; color: var(--muted); }
+
+    /* ── SVG diagrams ── */
+    .diagram-wrap {
+      text-align: center;
+      margin: 1.5rem 0;
+      overflow-x: auto;
+    }
+    .diagram-wrap svg { max-width: 100%; height: auto; }
+    .diagram-caption {
+      font-size: .8rem;
+      color: var(--muted);
+      margin-top: .5rem;
+    }
+
+    /* ── Exercise result ── */
+    .exercise-result {
+      display: none;
+      margin-top: 1.25rem;
+    }
+
+    /* ── Packet table ── */
+    .packet-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+      margin: 1rem 0;
+    }
+    .packet-table th {
+      background: var(--accent-lt);
+      color: var(--accent);
+      font-weight: 700;
+      padding: .5rem .75rem;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+    }
+    .packet-table td {
+      padding: .45rem .75rem;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: .84rem;
+    }
+    .packet-table tr:last-child td { border-bottom: none; }
+    .packet-table tr:nth-child(even) td { background: var(--bg); }
+
+    /* ── Divider tra tutorial ── */
+    .tutorial-divider {
+      border: none;
+      border-top: 2px dashed var(--border);
+      margin: 2.5rem 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      font-size: .8rem;
+      color: var(--muted);
+      padding: 2rem 0 1rem;
+      border-top: 1px solid var(--border);
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════ HEADER ══════════════════════ -->
+<header>
+  <div class="header-inner">
+    <span class="badge">Sistemi e Reti – Classe 4</span>
+    <h1>🦈 WireShark – DNS e Tracert</h1>
+    <p>Due tutorial pratici per osservare il funzionamento del DNS e del comando <code style="background:rgba(255,255,255,.15);border:none;color:#fff">tracert</code> attraverso l'analisi del traffico di rete.</p>
+  </div>
+</header>
+
+<div class="page-wrap">
+
+  <!-- Navigazione rapida -->
+  <nav class="toc" aria-label="Navigazione">
+    <a href="#dns-teoria">① DNS – Come funziona</a>
+    <a href="#dns-esercizio">② DNS – Cattura con WireShark</a>
+    <a href="#tracert-teoria">③ Tracert – Come funziona</a>
+    <a href="#tracert-esercizio">④ Tracert – Cattura con WireShark</a>
+  </nav>
+
+
+  <!-- ══════════════════════════════════════════════════════
+       TUTORIAL 1 – DNS
+  ══════════════════════════════════════════════════════ -->
+
+  <!-- ══════ SEZIONE 1 – DNS TEORIA ══════ -->
+  <section class="section" id="dns-teoria">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🌐</div>
+      <h2>Tutorial 1 · Il protocollo DNS</h2>
+    </div>
+    <span class="tutorial-label label-blue">Tutorial 1 di 2</span>
+
+    <p>
+      Il <strong>DNS</strong> (Domain Name System) è il sistema che traduce i nomi di dominio leggibili dall'uomo
+      (come <code>www.google.com</code>) in indirizzi IP numerici (come <code>142.250.180.68</code>) che i
+      computer usano per comunicare. Senza DNS dovremmo ricordare indirizzi IP a memoria.
+    </p>
+
+    <h3>Struttura gerarchica del DNS</h3>
+    <p>
+      Il DNS è organizzato come un albero rovesciato. Alla radice ci sono i <strong>Root Server</strong> (13 cluster
+      nel mondo), poi i <strong>TLD Server</strong> (Top-Level Domain: <code>.com</code>, <code>.it</code>, ecc.)
+      e infine i <strong>Authoritative Name Server</strong> di ogni dominio.
+    </p>
+
+    <!-- Diagramma gerarchia DNS -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Gerarchia DNS">
+        <defs>
+          <marker id="arr-dns" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#6b7280"/>
+          </marker>
+        </defs>
+        <g font-family="'Segoe UI',sans-serif">
+          <!-- Root -->
+          <rect x="280" y="10" width="140" height="44" rx="8" fill="#1a3a6b" stroke="#1a6fc4" stroke-width="1.5"/>
+          <text x="350" y="29" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">Root Servers</text>
+          <text x="350" y="46" text-anchor="middle" font-size="11" fill="#93c5fd">"." (punto radice)</text>
+
+          <!-- Linee verso TLD -->
+          <line x1="280" y1="54" x2="140" y2="100" stroke="#6b7280" stroke-width="1.3" marker-end="url(#arr-dns)"/>
+          <line x1="350" y1="54" x2="350" y2="100" stroke="#6b7280" stroke-width="1.3" marker-end="url(#arr-dns)"/>
+          <line x1="420" y1="54" x2="560" y2="100" stroke="#6b7280" stroke-width="1.3" marker-end="url(#arr-dns)"/>
+
+          <!-- TLD .com -->
+          <rect x="60" y="103" width="160" height="44" rx="8" fill="#1a6fc4" stroke="#93c5fd" stroke-width="1.3"/>
+          <text x="140" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">TLD Server .com</text>
+          <text x="140" y="139" text-anchor="middle" font-size="11" fill="#bfdbfe">Gestisce tutti i .com</text>
+
+          <!-- TLD .it -->
+          <rect x="270" y="103" width="160" height="44" rx="8" fill="#1a6fc4" stroke="#93c5fd" stroke-width="1.3"/>
+          <text x="350" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">TLD Server .it</text>
+          <text x="350" y="139" text-anchor="middle" font-size="11" fill="#bfdbfe">Gestisce tutti i .it</text>
+
+          <!-- TLD .org -->
+          <rect x="480" y="103" width="160" height="44" rx="8" fill="#1a6fc4" stroke="#93c5fd" stroke-width="1.3"/>
+          <text x="560" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">TLD Server .org</text>
+          <text x="560" y="139" text-anchor="middle" font-size="11" fill="#bfdbfe">Gestisce tutti i .org</text>
+
+          <!-- Linee verso Authoritative -->
+          <line x1="100" y1="147" x2="80"  y2="200" stroke="#6b7280" stroke-width="1.3" marker-end="url(#arr-dns)"/>
+          <line x1="170" y1="147" x2="220" y2="200" stroke="#6b7280" stroke-width="1.3" marker-end="url(#arr-dns)"/>
+          <line x1="350" y1="147" x2="350" y2="200" stroke="#6b7280" stroke-width="1.3" marker-end="url(#arr-dns)"/>
+
+          <!-- Auth google.com -->
+          <rect x="20" y="203" width="145" height="44" rx="8" fill="#e8f0fb" stroke="#1a6fc4"/>
+          <text x="92" y="222" text-anchor="middle" font-size="11" font-weight="700" fill="#1a3a6b">Auth. NS google.com</text>
+          <text x="92" y="238" text-anchor="middle" font-size="10" fill="#6b7280">ns1.google.com</text>
+
+          <!-- Auth amazon.com -->
+          <rect x="175" y="203" width="145" height="44" rx="8" fill="#e8f0fb" stroke="#1a6fc4"/>
+          <text x="247" y="222" text-anchor="middle" font-size="11" font-weight="700" fill="#1a3a6b">Auth. NS amazon.com</text>
+          <text x="247" y="238" text-anchor="middle" font-size="10" fill="#6b7280">pdns1.ultradns.net</text>
+
+          <!-- Auth istruzione.it -->
+          <rect x="275" y="203" width="155" height="44" rx="8" fill="#e8f0fb" stroke="#1a6fc4"/>
+          <text x="352" y="222" text-anchor="middle" font-size="11" font-weight="700" fill="#1a3a6b">Auth. NS istruzione.it</text>
+          <text x="352" y="238" text-anchor="middle" font-size="10" fill="#6b7280">ns1.istruzione.it</text>
+        </g>
+      </svg>
+      <p class="diagram-caption">Fig. 1 – Gerarchia del DNS: da Root Server agli Authoritative Name Server</p>
+    </div>
+
+    <h3>Il processo di risoluzione DNS (query ricorsiva)</h3>
+    <p>
+      Quando digitate <code>www.google.com</code> nel browser, il vostro PC non conosce l'indirizzo IP.
+      Avvia quindi una <strong>query DNS ricorsiva</strong>: chiede al resolver locale (solitamente il router
+      o un server del provider), che a sua volta consulta la gerarchia di server fino ad ottenere la risposta.
+    </p>
+
+    <!-- Diagramma query DNS ricorsiva -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Query DNS ricorsiva">
+        <defs>
+          <marker id="arr-q" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L9,3 z" fill="#1a6fc4"/>
+          </marker>
+          <marker id="arr-r" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L9,3 z" fill="#0e9e6e"/>
+          </marker>
+        </defs>
+        <g font-family="'Segoe UI',sans-serif">
+
+          <!-- PC Client -->
+          <rect x="10" y="120" width="110" height="70" rx="8" fill="#e8f0fb" stroke="#1a6fc4" stroke-width="1.5"/>
+          <text x="65" y="147" text-anchor="middle" font-size="13" font-weight="700" fill="#1a3a6b">PC Client</text>
+          <text x="65" y="163" text-anchor="middle" font-size="10" fill="#374151">browser cerca</text>
+          <text x="65" y="177" text-anchor="middle" font-size="10" fill="#374151">www.google.com</text>
+
+          <!-- DNS Resolver (router/ISP) -->
+          <rect x="175" y="120" width="125" height="70" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+          <text x="237" y="147" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e">DNS Resolver</text>
+          <text x="237" y="163" text-anchor="middle" font-size="10" fill="#78350f">Router / ISP</text>
+          <text x="237" y="177" text-anchor="middle" font-size="10" fill="#78350f">(ex: 8.8.8.8)</text>
+
+          <!-- Root Server -->
+          <rect x="355" y="30" width="120" height="55" rx="8" fill="#1a3a6b" stroke="#1a6fc4"/>
+          <text x="415" y="53" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">Root Server</text>
+          <text x="415" y="68" text-anchor="middle" font-size="10" fill="#93c5fd">"." radice</text>
+
+          <!-- TLD Server -->
+          <rect x="355" y="133" width="120" height="55" rx="8" fill="#1a6fc4" stroke="#93c5fd"/>
+          <text x="415" y="156" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">TLD Server</text>
+          <text x="415" y="171" text-anchor="middle" font-size="10" fill="#bfdbfe">.com</text>
+
+          <!-- Auth Server -->
+          <rect x="355" y="235" width="120" height="55" rx="8" fill="#e8f0fb" stroke="#1a6fc4"/>
+          <text x="415" y="258" text-anchor="middle" font-size="11" font-weight="700" fill="#1a3a6b">Auth. Server</text>
+          <text x="415" y="273" text-anchor="middle" font-size="10" fill="#374151">google.com</text>
+
+          <!-- ➀ PC → Resolver -->
+          <line x1="123" y1="148" x2="172" y2="148" stroke="#1a6fc4" stroke-width="1.8" marker-end="url(#arr-q)"/>
+          <text x="148" y="140" text-anchor="middle" font-size="9" fill="#1a6fc4">➀ Query</text>
+
+          <!-- ➁ Resolver → Root -->
+          <path d="M 302 140 Q 328 80 353 57" fill="none" stroke="#1a6fc4" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-q)"/>
+          <text x="316" y="88" text-anchor="middle" font-size="9" fill="#1a6fc4">➁</text>
+
+          <!-- ➂ Root → Resolver (risponde con TLD) -->
+          <path d="M 353 70 Q 325 95 302 152" fill="none" stroke="#0e9e6e" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-r)"/>
+          <text x="305" y="110" text-anchor="middle" font-size="9" fill="#0e9e6e">➂ TLD info</text>
+
+          <!-- ➃ Resolver → TLD -->
+          <line x1="302" y1="155" x2="353" y2="155" stroke="#1a6fc4" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-q)"/>
+          <text x="328" y="148" text-anchor="middle" font-size="9" fill="#1a6fc4">➃</text>
+
+          <!-- ➄ TLD → Resolver -->
+          <line x1="353" y1="165" x2="302" y2="165" stroke="#0e9e6e" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-r)"/>
+          <text x="328" y="178" text-anchor="middle" font-size="9" fill="#0e9e6e">➄ Auth info</text>
+
+          <!-- ➅ Resolver → Auth -->
+          <path d="M 302 170 Q 328 210 353 248" fill="none" stroke="#1a6fc4" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-q)"/>
+          <text x="308" y="213" text-anchor="middle" font-size="9" fill="#1a6fc4">➅</text>
+
+          <!-- ➆ Auth → Resolver -->
+          <path d="M 353 262 Q 325 240 302 185" fill="none" stroke="#0e9e6e" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-r)"/>
+          <text x="338" y="235" text-anchor="middle" font-size="9" fill="#0e9e6e">➆ IP!</text>
+
+          <!-- ➇ Resolver → PC -->
+          <line x1="172" y1="162" x2="123" y2="162" stroke="#0e9e6e" stroke-width="1.8" marker-end="url(#arr-r)"/>
+          <text x="148" y="176" text-anchor="middle" font-size="9" fill="#0e9e6e">➇ Risposta IP</text>
+
+          <!-- UDP label -->
+          <rect x="510" y="200" width="195" height="80" rx="8" fill="#f1f3f8" stroke="#dde1e9"/>
+          <text x="607" y="220" text-anchor="middle" font-size="11" font-weight="700" fill="#1e2330">Protocollo di trasporto</text>
+          <text x="607" y="238" text-anchor="middle" font-size="11" fill="#374151">📦 UDP porta 53</text>
+          <text x="607" y="255" text-anchor="middle" font-size="10" fill="#6b7280">(veloce, connectionless)</text>
+          <text x="607" y="270" text-anchor="middle" font-size="10" fill="#6b7280">TCP porta 53 se risposta &gt; 512 byte</text>
+        </g>
+      </svg>
+      <p class="diagram-caption">Fig. 2 – Il resolver esegue la query ricorsiva per conto del client (frecce blu = query, verdi = risposta)</p>
+    </div>
+
+    <h3>Struttura di un pacchetto DNS</h3>
+    <p>
+      I messaggi DNS viaggiano su <strong>UDP porta 53</strong> (o TCP se la risposta supera 512 byte).
+      Ogni messaggio contiene:
+    </p>
+    <ul>
+      <li><strong>Header</strong> – ID transazione, flag (Query/Response, Authoritative, ecc.), contatori.</li>
+      <li><strong>Question section</strong> – il nome richiesto e il tipo di record (<code>A</code>, <code>AAAA</code>, <code>MX</code>, ecc.).</li>
+      <li><strong>Answer section</strong> – la risposta con l'indirizzo IP e il TTL (Time To Live).</li>
+    </ul>
+
+    <table class="packet-table">
+      <thead>
+        <tr>
+          <th>Tipo di record</th>
+          <th>Significato</th>
+          <th>Esempio</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>A</td><td>Indirizzo IPv4</td><td>google.com → 142.250.x.x</td></tr>
+        <tr><td>AAAA</td><td>Indirizzo IPv6</td><td>google.com → 2a00:1450:...</td></tr>
+        <tr><td>MX</td><td>Mail server del dominio</td><td>google.com → smtp.google.com</td></tr>
+        <tr><td>CNAME</td><td>Alias verso un altro nome</td><td>www.google.com → google.com</td></tr>
+        <tr><td>NS</td><td>Name Server autoritativo</td><td>google.com → ns1.google.com</td></tr>
+      </tbody>
+    </table>
+
+    <div class="info-box">
+      <strong>💡 Il TTL e la cache DNS</strong>
+      Ogni risposta DNS include un valore <strong>TTL</strong> (Time To Live, in secondi): indica per quanto tempo il resolver
+      può tenere in cache la risposta. Se fate la stessa query entro il TTL, il resolver risponde dalla cache
+      senza contattare nuovamente i server — per questo potreste non vedere traffico DNS in WireShark!
+    </div>
+  </section>
+
+
+  <!-- ══════ SEZIONE 2 – ESERCIZIO DNS ══════ -->
+  <section class="section" id="dns-esercizio">
+    <div class="section-header">
+      <div class="section-icon icon-warn">🧪</div>
+      <h2>Esercizio 1 · Catturare query DNS con WireShark</h2>
+    </div>
+    <span class="tutorial-label label-blue">Tutorial 1 · Parte pratica</span>
+
+    <p>
+      In questo esercizio osserverete in diretta come il vostro PC risolve un nome di dominio.
+      Cattureremo le query DNS generate dal comando <code>nslookup</code> e le analizzeremo in WireShark,
+      identificando i pacchetti di richiesta (Query) e di risposta (Response).
+    </p>
+
+    <!-- Diagramma flusso esercizio -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Schema esercizio DNS">
+        <defs>
+          <marker id="arr5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#1a6fc4"/>
+          </marker>
+          <marker id="arr5b" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#0e9e6e"/>
+          </marker>
+        </defs>
+        <g font-family="'Segoe UI',sans-serif">
+          <!-- PC -->
+          <rect x="20" y="50" width="140" height="65" rx="8" fill="#e8f0fb" stroke="#1a6fc4" stroke-width="1.5"/>
+          <text x="90" y="75" text-anchor="middle" font-size="13" font-weight="700" fill="#1a3a6b">Il vostro PC</text>
+          <text x="90" y="92" text-anchor="middle" font-size="10" fill="#374151">cmd →</text>
+          <text x="90" y="107" text-anchor="middle" font-size="10" fill="#374151">nslookup google.com</text>
+
+          <!-- Arrow query -->
+          <line x1="163" y1="72" x2="280" y2="72" stroke="#1a6fc4" stroke-width="1.8" marker-end="url(#arr5)"/>
+          <text x="222" y="65" text-anchor="middle" font-size="10" fill="#1a6fc4">DNS Query (UDP 53)</text>
+
+          <!-- DNS Server -->
+          <rect x="283" y="50" width="140" height="65" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+          <text x="353" y="75" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e">DNS Server</text>
+          <text x="353" y="92" text-anchor="middle" font-size="10" fill="#78350f">del router / ISP</text>
+          <text x="353" y="107" text-anchor="middle" font-size="10" fill="#78350f">porta 53</text>
+
+          <!-- Arrow response -->
+          <line x1="280" y1="95" x2="163" y2="95" stroke="#0e9e6e" stroke-width="1.8" marker-end="url(#arr5b)"/>
+          <text x="222" y="110" text-anchor="middle" font-size="10" fill="#0e9e6e">DNS Response (IP)</text>
+
+          <!-- WireShark -->
+          <rect x="490" y="55" width="170" height="55" rx="8" fill="#e8f0fb" stroke="#1a6fc4" stroke-width="1.5" stroke-dasharray="5,3"/>
+          <text x="575" y="79" text-anchor="middle" font-size="13" font-weight="700" fill="#1a3a6b">🦈 WireShark</text>
+          <text x="575" y="97" text-anchor="middle" font-size="10" fill="#374151">filtro: dns</text>
+
+          <!-- Tap -->
+          <line x1="426" y1="82" x2="487" y2="82" stroke="#6b7280" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr5)"/>
+          <text x="457" y="74" text-anchor="middle" font-size="10" fill="#6b7280">osserva</text>
+        </g>
+      </svg>
+      <p class="diagram-caption">Fig. 3 – WireShark intercetta la query DNS e la relativa risposta sull'interfaccia di rete attiva</p>
+    </div>
+
+    <div class="warn-box">
+      <strong>⚠️ Prima di iniziare: svuotare la cache DNS</strong>
+      Se la risposta è già in cache, il vostro PC non invierà nessuna query DNS e non vedrete nulla in WireShark!
+      Svuotate la cache prima di ogni cattura con il comando:<br/>
+      <code>ipconfig /flushdns</code>
+    </div>
+
+    <h3>Istruzioni passo-passo</h3>
+    <ol class="steps">
+      <li>
+        <div class="step-body">
+          <strong>Aprire il Prompt dei Comandi come Amministratore</strong>
+          Cliccate su Start, digitate <code>cmd</code>, fate click destro su "Prompt dei comandi" e
+          scegliete <em>Esegui come amministratore</em>. Servono i permessi admin per svuotare la cache DNS.
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Svuotare la cache DNS</strong>
+          Nel prompt digitate:
+          <pre><span class="k">ipconfig /flushdns</span></pre>
+          Dovreste vedere il messaggio: <em>"Svuotamento della cache del resolver DNS completato"</em>.
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Trovare il proprio indirizzo DNS</strong>
+          Digitate nel prompt:
+          <pre><span class="k">ipconfig /all</span></pre>
+          Cercate la riga <em>"Server DNS"</em> e annotatevi l'indirizzo IP (es. <code>192.168.1.1</code> oppure <code>8.8.8.8</code>).
+          Questo è il server a cui il vostro PC farà le query DNS.
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Avviare WireShark e selezionare l'interfaccia attiva</strong>
+          Aprite WireShark. Nella schermata iniziale identificate l'interfaccia con il grafico animato
+          (Ethernet o Wi-Fi) e fate doppio click per avviare la cattura.
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Applicare il capture filter (opzionale ma consigliato)</strong>
+          Prima di avviare la cattura potete scrivere nella barra del capture filter:
+          <pre><span class="k">udp port 53</span></pre>
+          Così catturate <em>solo</em> il traffico DNS e la lista rimane leggibile.
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Eseguire una query DNS con nslookup</strong>
+          Tornate al prompt e digitate:
+          <pre><span class="k">nslookup www.google.com</span></pre>
+          Poi eseguite anche:
+          <pre><span class="k">nslookup www.wikipedia.org</span></pre>
+          <code>nslookup</code> forza una query DNS indipendentemente dalla cache del browser.
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Fermare la cattura in WireShark</strong>
+          Premete il pulsante <strong>■ Stop</strong> (o <code>Ctrl+E</code>).
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Applicare il display filter DNS</strong>
+          Nella barra dei filtri digitate:
+          <pre><span class="k">dns</span></pre>
+          Vedrete coppie di pacchetti: una <strong>Standard query</strong> (Query) e una
+          <strong>Standard query response</strong> (Response) per ogni dominio richiesto.
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Analizzare i pacchetti</strong>
+          Cliccate su una <em>Standard query</em> e nel pannello centrale espandete:
+          <ul>
+            <li><code>User Datagram Protocol</code> → verificate porta sorgente (casuale &gt;1024) e destinazione (<strong>53</strong>)</li>
+            <li><code>Domain Name System (query)</code> → espandete <code>Queries</code>: vedrete il nome richiesto e il tipo (<strong>A</strong>)</li>
+          </ul>
+          Poi cliccate sulla <em>Standard query response</em> e espandete:
+          <ul>
+            <li><code>Domain Name System (response)</code> → espandete <code>Answers</code>: vedrete l'indirizzo IP e il TTL</li>
+          </ul>
+        </div>
+      </li>
+    </ol>
+
+    <div class="success-box">
+      <strong>✅ Cosa dovreste vedere in WireShark</strong>
+      <ul style="margin-top:.4rem; padding-left:1.2rem;">
+        <li>Pacchetto <strong>Query</strong>: dal vostro IP verso IP DNS, UDP porta 53, tipo A per <code>www.google.com</code></li>
+        <li>Pacchetto <strong>Response</strong>: dal DNS verso il vostro IP, con uno o più indirizzi IPv4 nella sezione Answers</li>
+        <li>Eventuale query <strong>AAAA</strong> (IPv6) in parallelo alla query A</li>
+      </ul>
+    </div>
+
+    <h3>Verifica – Lista di controllo</h3>
+    <p>Spuntate ogni punto dopo averlo completato:</p>
+    <ul class="checklist" id="checklist-dns">
+      <li data-id="d1">
+        <div class="check" onclick="toggleCheck('d1','checklist-dns','result-dns')"></div>
+        <span>Ho svuotato la cache DNS con <code>ipconfig /flushdns</code></span>
+      </li>
+      <li data-id="d2">
+        <div class="check" onclick="toggleCheck('d2','checklist-dns','result-dns')"></div>
+        <span>Ho annotato l'indirizzo del mio server DNS con <code>ipconfig /all</code></span>
+      </li>
+      <li data-id="d3">
+        <div class="check" onclick="toggleCheck('d3','checklist-dns','result-dns')"></div>
+        <span>Ho avviato la cattura su WireShark sull'interfaccia corretta</span>
+      </li>
+      <li data-id="d4">
+        <div class="check" onclick="toggleCheck('d4','checklist-dns','result-dns')"></div>
+        <span>Ho eseguito <code>nslookup www.google.com</code> e <code>nslookup www.wikipedia.org</code></span>
+      </li>
+      <li data-id="d5">
+        <div class="check" onclick="toggleCheck('d5','checklist-dns','result-dns')"></div>
+        <span>Applicando il filtro <code>dns</code> vedo coppie Query/Response</span>
+      </li>
+      <li data-id="d6">
+        <div class="check" onclick="toggleCheck('d6','checklist-dns','result-dns')"></div>
+        <span>Ho identificato la <strong>porta 53 UDP</strong> nella query</span>
+      </li>
+      <li data-id="d7">
+        <div class="check" onclick="toggleCheck('d7','checklist-dns','result-dns')"></div>
+        <span>Ho trovato l'indirizzo IP di google.com nella sezione <strong>Answers</strong> della response</span>
+      </li>
+      <li data-id="d8">
+        <div class="check" onclick="toggleCheck('d8','checklist-dns','result-dns')"></div>
+        <span>Ho letto il valore TTL della risposta (in secondi)</span>
+      </li>
+    </ul>
+
+    <div id="result-dns" class="exercise-result">
+      <div class="success-box">
+        <strong>🎉 Ottimo lavoro sul Tutorial 1!</strong>
+        Hai osservato il DNS all'opera: query UDP verso la porta 53, risposta con l'IP richiesto e il TTL.
+        Procedi ora con il Tutorial 2 su Tracert!
+      </div>
+    </div>
+
+    <div class="info-box" style="margin-top:1.5rem">
+      <strong>📝 Domande di riflessione – DNS</strong>
+      <ol style="margin-top:.5rem; padding-left:1.2rem;">
+        <li>Perché DNS usa UDP invece di TCP? In quale caso usa TCP?</li>
+        <li>Cosa significa il valore TTL nella risposta? Se fosse 0, cosa succederebbe?</li>
+        <li>Effettuate due volte la stessa query con <code>nslookup</code>: la seconda volta vedete ancora traffico in WireShark? Perché?</li>
+        <li>Quale tipo di record dovreste cercare per trovare il server di posta di un dominio?</li>
+      </ol>
+    </div>
+  </section>
+
+
+  <hr class="tutorial-divider"/>
+
+
+  <!-- ══════════════════════════════════════════════════════
+       TUTORIAL 2 – TRACERT
+  ══════════════════════════════════════════════════════ -->
+
+  <!-- ══════ SEZIONE 3 – TRACERT TEORIA ══════ -->
+  <section class="section" id="tracert-teoria">
+    <div class="section-header">
+      <div class="section-icon icon-green">🗺️</div>
+      <h2>Tutorial 2 · Il comando Tracert</h2>
+    </div>
+    <span class="tutorial-label label-green">Tutorial 2 di 2</span>
+
+    <p>
+      <code>tracert</code> (su Windows; <code>traceroute</code> su Linux/macOS) è un comando che mostra
+      il <strong>percorso</strong> che i pacchetti compiono dalla vostra macchina fino a una destinazione,
+      elencando tutti i <strong>router intermedi</strong> (hop) attraversati. È uno strumento fondamentale
+      per la diagnosi di problemi di connettività.
+    </p>
+
+    <h3>Il meccanismo: TTL e ICMP Time Exceeded</h3>
+    <p>
+      <code>tracert</code> sfrutta in modo ingegnoso il campo <strong>TTL</strong> (Time To Live) dell'header IP.
+      Ogni router che riceve un pacchetto <em>decrementa</em> il TTL di 1. Se il TTL arriva a 0, il router
+      scarta il pacchetto e invia al mittente un messaggio <strong>ICMP Type 11 – Time Exceeded</strong>.
+      Questo messaggio contiene l'IP del router che ha scartato il pacchetto — ed è esattamente quello che
+      <code>tracert</code> usa per mappare il percorso.
+    </p>
+
+    <!-- Diagramma TTL e hop -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Meccanismo TTL tracert">
+        <defs>
+          <marker id="arr-t" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#1a6fc4"/>
+          </marker>
+          <marker id="arr-icmp" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#dc2626"/>
+          </marker>
+        </defs>
+        <g font-family="'Segoe UI',sans-serif" font-size="12">
+
+          <!-- ── Riga 1: TTL=1 ── -->
+          <text x="10" y="28" font-weight="700" fill="#1e2330">Sonda 1 (TTL=1):</text>
+
+          <!-- PC -->
+          <rect x="10" y="35" width="80" height="40" rx="6" fill="#e8f0fb" stroke="#1a6fc4"/>
+          <text x="50" y="51" text-anchor="middle" font-weight="600" fill="#1a3a6b">PC</text>
+          <text x="50" y="66" text-anchor="middle" font-size="10" fill="#6b7280">TTL=1</text>
+
+          <!-- Arrow TTL=1 → R1 -->
+          <line x1="93"  y1="55" x2="145" y2="55" stroke="#1a6fc4" stroke-width="1.6" marker-end="url(#arr-t)"/>
+          <text x="119" y="47" text-anchor="middle" font-size="10" fill="#1a6fc4">TTL=1</text>
+
+          <!-- Router 1 -->
+          <rect x="148" y="35" width="80" height="40" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+          <text x="188" y="51" text-anchor="middle" font-weight="600" fill="#991b1b">Router 1</text>
+          <text x="188" y="66" text-anchor="middle" font-size="10" fill="#6b7280">TTL→0 ✗</text>
+
+          <!-- ICMP reply R1 → PC -->
+          <path d="M 148 65 Q 119 90 93 65" fill="none" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr-icmp)"/>
+          <text x="119" y="93" text-anchor="middle" font-size="10" fill="#dc2626">ICMP Time Exceeded</text>
+
+          <!-- Router 2 (grigio) -->
+          <rect x="280" y="35" width="80" height="40" rx="6" fill="#f1f3f8" stroke="#dde1e9"/>
+          <text x="320" y="55" text-anchor="middle" fill="#9ca3af">Router 2</text>
+
+          <!-- Router 3 / Dest (grigio) -->
+          <rect x="412" y="35" width="80" height="40" rx="6" fill="#f1f3f8" stroke="#dde1e9"/>
+          <text x="452" y="55" text-anchor="middle" fill="#9ca3af">Destinazione</text>
+
+          <!-- ── Riga 2: TTL=2 ── -->
+          <text x="10" y="138" font-weight="700" fill="#1e2330">Sonda 2 (TTL=2):</text>
+
+          <rect x="10" y="145" width="80" height="40" rx="6" fill="#e8f0fb" stroke="#1a6fc4"/>
+          <text x="50" y="161" text-anchor="middle" font-weight="600" fill="#1a3a6b">PC</text>
+          <text x="50" y="176" text-anchor="middle" font-size="10" fill="#6b7280">TTL=2</text>
+
+          <line x1="93"  y1="165" x2="145" y2="165" stroke="#1a6fc4" stroke-width="1.6" marker-end="url(#arr-t)"/>
+          <text x="119" y="157" text-anchor="middle" font-size="10" fill="#1a6fc4">TTL=2</text>
+
+          <rect x="148" y="145" width="80" height="40" rx="6" fill="#e6f7f1" stroke="#0e9e6e"/>
+          <text x="188" y="161" text-anchor="middle" font-weight="600" fill="#065f46">Router 1</text>
+          <text x="188" y="176" text-anchor="middle" font-size="10" fill="#6b7280">TTL→1 →</text>
+
+          <line x1="231" y1="165" x2="278" y2="165" stroke="#1a6fc4" stroke-width="1.6" marker-end="url(#arr-t)"/>
+          <text x="255" y="157" text-anchor="middle" font-size="10" fill="#1a6fc4">TTL=1</text>
+
+          <rect x="281" y="145" width="80" height="40" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+          <text x="321" y="161" text-anchor="middle" font-weight="600" fill="#991b1b">Router 2</text>
+          <text x="321" y="176" text-anchor="middle" font-size="10" fill="#6b7280">TTL→0 ✗</text>
+
+          <path d="M 281 175 Q 197 210 93 175" fill="none" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr-icmp)"/>
+          <text x="197" y="218" text-anchor="middle" font-size="10" fill="#dc2626">ICMP Time Exceeded da Router 2</text>
+
+          <rect x="413" y="145" width="80" height="40" rx="6" fill="#f1f3f8" stroke="#dde1e9"/>
+          <text x="453" y="165" text-anchor="middle" fill="#9ca3af">Destinazione</text>
+
+          <!-- TTL=3 label -->
+          <text x="10" y="248" font-size="11" fill="#6b7280">Sonda 3 (TTL=3): il pacchetto raggiunge la destinazione → ICMP Echo Reply (o Time Exceeded assente)</text>
+        </g>
+      </svg>
+      <p class="diagram-caption">Fig. 4 – Tracert aumenta il TTL di 1 ad ogni sonda: ogni router che esaurisce il TTL risponde con ICMP Time Exceeded</p>
+    </div>
+
+    <h3>Algoritmo di Tracert passo-passo</h3>
+    <p>
+      Per ogni hop (da 1 fino a un massimo, di default 30), <code>tracert</code>:
+    </p>
+    <ol>
+      <li>Invia <strong>3 pacchetti ICMP Echo Request</strong> (o UDP su Linux) con TTL uguale al numero dell'hop.</li>
+      <li>Aspetta fino a 3 secondi una risposta da un router o dalla destinazione.</li>
+      <li>Misura il <strong>tempo di andata e ritorno</strong> (RTT) in millisecondi per ognuno dei 3 pacchetti.</li>
+      <li>Se riceve <code>ICMP Time Exceeded</code> → annota l'IP del router e passa all'hop successivo.</li>
+      <li>Se riceve <code>ICMP Echo Reply</code> dalla destinazione → il tracciato è completato.</li>
+      <li>Se non riceve risposta entro il timeout → stampa <code>* * *</code> (hop non risponde, spesso firewall).</li>
+    </ol>
+
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Output tracert e WireShark">
+        <defs>
+          <marker id="arr-h" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#1a6fc4"/>
+          </marker>
+        </defs>
+        <g font-family="'Segoe UI',sans-serif" font-size="12">
+          <!-- PC -->
+          <rect x="20" y="75" width="90" height="50" rx="8" fill="#e8f0fb" stroke="#1a6fc4"/>
+          <text x="65" y="98" text-anchor="middle" font-weight="700" fill="#1a3a6b">PC</text>
+          <text x="65" y="114" text-anchor="middle" font-size="10" fill="#6b7280">tracert</text>
+
+          <!-- Hop 1 -->
+          <rect x="155" y="75" width="90" height="50" rx="8" fill="#e6f7f1" stroke="#0e9e6e"/>
+          <text x="200" y="95" text-anchor="middle" font-weight="700" fill="#065f46">Hop 1</text>
+          <text x="200" y="110" text-anchor="middle" font-size="10" fill="#374151">Router locale</text>
+          <text x="200" y="122" text-anchor="middle" font-size="10" fill="#374151">es. 192.168.1.1</text>
+
+          <!-- Hop 2 -->
+          <rect x="290" y="75" width="90" height="50" rx="8" fill="#e6f7f1" stroke="#0e9e6e"/>
+          <text x="335" y="95" text-anchor="middle" font-weight="700" fill="#065f46">Hop 2</text>
+          <text x="335" y="110" text-anchor="middle" font-size="10" fill="#374151">Router ISP</text>
+          <text x="335" y="122" text-anchor="middle" font-size="10" fill="#374151">es. 10.x.x.x</text>
+
+          <!-- Hop ... -->
+          <text x="430" y="105" text-anchor="middle" font-size="18" fill="#9ca3af">···</text>
+
+          <!-- Destinazione -->
+          <rect x="480" y="75" width="110" height="50" rx="8" fill="#fef3c7" stroke="#d97706"/>
+          <text x="535" y="98" text-anchor="middle" font-weight="700" fill="#92400e">Destinazione</text>
+          <text x="535" y="114" text-anchor="middle" font-size="10" fill="#78350f">google.com</text>
+
+          <!-- Arrows -->
+          <line x1="113"  y1="100" x2="152"  y2="100" stroke="#1a6fc4" stroke-width="1.6" marker-end="url(#arr-h)"/>
+          <line x1="248"  y1="100" x2="287"  y2="100" stroke="#1a6fc4" stroke-width="1.6" marker-end="url(#arr-h)"/>
+          <line x1="383"  y1="100" x2="410"  y2="100" stroke="#1a6fc4" stroke-width="1.6" marker-end="url(#arr-h)"/>
+          <line x1="445"  y1="100" x2="477"  y2="100" stroke="#1a6fc4" stroke-width="1.6" marker-end="url(#arr-h)"/>
+
+          <!-- Labels TTL -->
+          <text x="133" y="93" text-anchor="middle" font-size="9" fill="#6b7280">TTL=1</text>
+          <text x="268" y="93" text-anchor="middle" font-size="9" fill="#6b7280">TTL=2</text>
+
+          <!-- WireShark nota -->
+          <rect x="20" y="148" width="660" height="40" rx="6" fill="#f1f3f8" stroke="#dde1e9"/>
+          <text x="350" y="165" text-anchor="middle" font-size="11" fill="#374151">
+            WireShark vedrà: ICMP Echo Request (con TTL=1,2,3…) e ICMP Time Exceeded per ogni router attraversato
+          </text>
+          <text x="350" y="180" text-anchor="middle" font-size="11" fill="#374151">
+            più l'ICMP Echo Reply finale dalla destinazione • Filtro consigliato: <tspan font-family="Consolas,monospace">icmp</tspan>
+          </text>
+        </g>
+      </svg>
+      <p class="diagram-caption">Fig. 5 – Ogni hop risponde con ICMP Time Exceeded; WireShark cattura tutta la sequenza</p>
+    </div>
+
+    <div class="info-box">
+      <strong>💡 Hop con * * * nel tracert</strong>
+      Alcuni router sono configurati per <strong>non rispondere</strong> ai messaggi ICMP (per sicurezza o policy di rete).
+      In WireShark vedrete comunque i pacchetti in uscita, ma nessuna risposta in ingresso per quell'hop.
+      Questo non significa che il percorso sia interrotto: i pacchetti passano comunque, il router semplicemente
+      non "si rivela".
+    </div>
+  </section>
+
+
+  <!-- ══════ SEZIONE 4 – ESERCIZIO TRACERT ══════ -->
+  <section class="section" id="tracert-esercizio">
+    <div class="section-header">
+      <div class="section-icon icon-warn">🧪</div>
+      <h2>Esercizio 2 · Catturare Tracert con WireShark</h2>
+    </div>
+    <span class="tutorial-label label-green">Tutorial 2 · Parte pratica</span>
+
+    <p>
+      In questo esercizio cattureremo il traffico generato da <code>tracert</code> verso un server pubblico
+      (es. <code>8.8.8.8</code>, il DNS pubblico di Google). Osserveremo in WireShark come ogni hop genera
+      una coppia di pacchetti: ICMP Echo Request in uscita e ICMP Time Exceeded in ingresso.
+    </p>
+
+    <div class="info-box">
+      <strong>📌 Perché usare 8.8.8.8?</strong>
+      L'indirizzo <code>8.8.8.8</code> è il DNS pubblico di Google, raggiungibile da qualsiasi rete.
+      È un buon target perché risponde ai ping e ha un percorso tipicamente di 10–15 hop.
+      Potete usare anche <code>www.google.com</code> o qualsiasi altro host raggiungibile.
+    </div>
+
+    <h3>Istruzioni passo-passo</h3>
+    <ol class="steps">
+      <li>
+        <div class="step-body">
+          <strong>Aprire WireShark e selezionare l'interfaccia attiva</strong>
+          Aprite WireShark. Identificate l'interfaccia con traffico (Ethernet o Wi-Fi) e fate doppio click
+          per avviare la cattura. <em>Non</em> impostate ancora nessun filtro: vogliamo catturare tutto.
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Aprire il Prompt dei Comandi</strong>
+          Premete <code>Win + R</code>, digitate <code>cmd</code> e premete Invio.
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Eseguire il tracert</strong>
+          Digitate nel prompt:
+          <pre><span class="k">tracert 8.8.8.8</span></pre>
+          Il comando ci metterà 30–60 secondi. Lasciatelo completare; vedrete gli hop apparire uno a uno.
+          L'output sarà simile a:
+          <pre><span class="c">Ricerca instradamento per 8.8.8.8 con un massimo di 30 hop:</span>
+
+<span class="v">  1</span>    <span class="s">1 ms</span>    <span class="s">1 ms</span>    <span class="s">&lt;1 ms</span>  <span class="k">192.168.1.1</span>        <span class="c">← router di casa</span>
+<span class="v">  2</span>    <span class="s">8 ms</span>    <span class="s">7 ms</span>    <span class="s">9 ms</span>   <span class="k">10.x.x.x</span>           <span class="c">← router ISP</span>
+<span class="v">  3</span>   <span class="s">12 ms</span>   <span class="s">11 ms</span>   <span class="s">13 ms</span>  <span class="k">x.x.x.x</span>
+<span class="v">  ...</span>
+<span class="v"> 10</span>   <span class="s">18 ms</span>   <span class="s">18 ms</span>   <span class="s">17 ms</span>  <span class="k">8.8.8.8</span>            <span class="c">← destinazione!</span>
+<span class="c">Traccia completata.</span></pre>
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Fermare la cattura in WireShark</strong>
+          Appena il tracert è terminato, tornate su WireShark e premete <strong>■ Stop</strong> (<code>Ctrl+E</code>).
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Filtrare i pacchetti ICMP</strong>
+          Nella barra dei display filter digitate:
+          <pre><span class="k">icmp</span></pre>
+          Vedrete una lunga lista di pacchetti. Individuate:
+          <ul>
+            <li><strong>ICMP Echo (ping) request</strong> – i pacchetti inviati con TTL crescente</li>
+            <li><strong>ICMP Time-to-live exceeded</strong> – le risposte dei router intermedi</li>
+            <li><strong>ICMP Echo (ping) reply</strong> – la risposta della destinazione finale</li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Analizzare un Echo Request</strong>
+          Cliccate su uno dei primi <em>ICMP Echo (ping) request</em> e nel pannello centrale espandete:
+          <ul>
+            <li><code>Internet Protocol Version 4</code> → osservate il campo <strong>Time to Live</strong> (sarà 1 per il primo hop, 2 per il secondo, ecc.)</li>
+            <li><code>Internet Control Message Protocol</code> → Type: 8 (Echo Request), Code: 0</li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Analizzare un Time Exceeded</strong>
+          Cliccate su un pacchetto <em>ICMP Time-to-live exceeded</em> e espandete:
+          <ul>
+            <li><code>Internet Protocol Version 4</code> → l'IP sorgente è quello del <strong>router</strong> che ha scartato il pacchetto</li>
+            <li><code>Internet Control Message Protocol</code> → Type: 11 (Time Exceeded), Code: 0</li>
+            <li>Dentro troverete anche il <strong>pacchetto originale</strong> che ha causato l'errore (incapsulato nell'ICMP)</li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Filtrare solo i Time Exceeded</strong>
+          Provate il filtro avanzato:
+          <pre><span class="k">icmp.type == 11</span></pre>
+          Vedrete solo i messaggi di errore dei router. Contate quanti hop hanno risposto (alcuni con <code>* * *</code>
+          non appariranno perché non hanno inviato alcuna risposta ICMP).
+        </div>
+      </li>
+      <li>
+        <div class="step-body">
+          <strong>Trovare la risposta finale</strong>
+          Applicate il filtro:
+          <pre><span class="k">icmp.type == 0</span></pre>
+          Type 0 = <em>Echo Reply</em>: vedrete la risposta della destinazione finale (<code>8.8.8.8</code>).
+          Confrontate l'RTT mostrato da tracert con i tempi che potete calcolare in WireShark.
+        </div>
+      </li>
+    </ol>
+
+    <!-- Tabella tipi ICMP -->
+    <h3>Riepilogo tipi ICMP visti in questo esercizio</h3>
+    <table class="packet-table">
+      <thead>
+        <tr>
+          <th>Tipo ICMP</th>
+          <th>Nome</th>
+          <th>Inviato da</th>
+          <th>Significato</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>8</td><td>Echo Request</td><td>PC (tracert)</td><td>Pacchetto sonda inviato con TTL basso</td></tr>
+        <tr><td>11</td><td>Time Exceeded</td><td>Router intermedio</td><td>TTL=0, pacchetto scartato → router si identifica</td></tr>
+        <tr><td>0</td><td>Echo Reply</td><td>Destinazione finale</td><td>Host raggiunto, tracert completato</td></tr>
+        <tr><td>3</td><td>Destination Unreachable</td><td>Router / host</td><td>Destinazione non raggiungibile (raro in tracert)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="success-box">
+      <strong>✅ Cosa dovreste vedere in WireShark</strong>
+      Per ogni hop del tracert (es. 10 hop = 10 router) dovreste trovare:
+      3 Echo Request in uscita + fino a 3 Time Exceeded in ingresso (se il router risponde).
+      Alla fine, 3 Echo Reply dalla destinazione <code>8.8.8.8</code>.
+      Multiplicate per 3 (le tre sonde per hop) e avrete un'idea di quanti pacchetti totali aspettarvi.
+    </div>
+
+    <h3>Verifica – Lista di controllo</h3>
+    <p>Spuntate ogni punto dopo averlo completato:</p>
+    <ul class="checklist" id="checklist-tracert">
+      <li data-id="t1">
+        <div class="check" onclick="toggleCheck('t1','checklist-tracert','result-tracert')"></div>
+        <span>Ho avviato la cattura su WireShark sull'interfaccia corretta</span>
+      </li>
+      <li data-id="t2">
+        <div class="check" onclick="toggleCheck('t2','checklist-tracert','result-tracert')"></div>
+        <span>Ho eseguito <code>tracert 8.8.8.8</code> nel Prompt dei Comandi e ho atteso il completamento</span>
+      </li>
+      <li data-id="t3">
+        <div class="check" onclick="toggleCheck('t3','checklist-tracert','result-tracert')"></div>
+        <span>Applicando il filtro <code>icmp</code> vedo pacchetti Echo Request e Time Exceeded</span>
+      </li>
+      <li data-id="t4">
+        <div class="check" onclick="toggleCheck('t4','checklist-tracert','result-tracert')"></div>
+        <span>Ho trovato un Echo Request e verificato il campo TTL nell'header IP</span>
+      </li>
+      <li data-id="t5">
+        <div class="check" onclick="toggleCheck('t5','checklist-tracert','result-tracert')"></div>
+        <span>Ho trovato un pacchetto ICMP Time Exceeded (tipo 11) e identificato l'IP del router che lo ha inviato</span>
+      </li>
+      <li data-id="t6">
+        <div class="check" onclick="toggleCheck('t6','checklist-tracert','result-tracert')"></div>
+        <span>Con il filtro <code>icmp.type == 11</code> ho contato quanti router hanno risposto</span>
+      </li>
+      <li data-id="t7">
+        <div class="check" onclick="toggleCheck('t7','checklist-tracert','result-tracert')"></div>
+        <span>Con il filtro <code>icmp.type == 0</code> ho trovato la Echo Reply finale da <code>8.8.8.8</code></span>
+      </li>
+      <li data-id="t8">
+        <div class="check" onclick="toggleCheck('t8','checklist-tracert','result-tracert')"></div>
+        <span>Ho confrontato gli hop visti nel cmd con i pacchetti in WireShark</span>
+      </li>
+    </ul>
+
+    <div id="result-tracert" class="exercise-result">
+      <div class="success-box">
+        <strong>🎉 Complimenti! Hai completato entrambi i tutorial!</strong>
+        Hai osservato in diretta il meccanismo del TTL usato da tracert e identificato i messaggi ICMP
+        Time Exceeded generati dai router lungo il percorso. Ottima analisi!
+      </div>
+    </div>
+
+    <div class="info-box" style="margin-top:1.5rem">
+      <strong>📝 Domande di riflessione – Tracert</strong>
+      <ol style="margin-top:.5rem; padding-left:1.2rem;">
+        <li>Perché tracert invia <strong>3</strong> sonde per ogni hop e non solo 1?</li>
+        <li>Cosa significa un hop con <code>* * *</code>? Il pacchetto si è perso o è passato comunque?</li>
+        <li>Qual è la differenza tra il TTL nell'header IP e il TTL nella risposta DNS?</li>
+        <li>Se il tempo di risposta di un hop è molto più alto degli hop precedenti, cosa potrebbe significare?</li>
+        <li>Su Linux/macOS il comando equivalente si chiama <code>traceroute</code> e usa UDP invece di ICMP. Come cambierebbe la cattura in WireShark?</li>
+      </ol>
+    </div>
+  </section>
+
+</div><!-- /page-wrap -->
+
+<footer>
+  <p>Tutorial WireShark · Sistemi e Reti – Classe 4 &nbsp;|&nbsp; Tutorial 2 – DNS e Tracert &nbsp;|&nbsp; Realizzato con HTML + SVG</p>
+</footer>
+
+<script>
+  function toggleCheck(id, listId, resultId) {
+    const li = document.querySelector(`#${listId} li[data-id="${id}"]`);
+    if (!li) return;
+    li.classList.toggle('done');
+    checkAll(listId, resultId);
+  }
+
+  function checkAll(listId, resultId) {
+    const items = document.querySelectorAll(`#${listId} li`);
+    const done  = document.querySelectorAll(`#${listId} li.done`);
+    const result = document.getElementById(resultId);
+    if (!result) return;
+    if (done.length === items.length && items.length > 0) {
+      result.style.display = 'block';
+      result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } else {
+      result.style.display = 'none';
+    }
+  }
+</script>
+</body>
+</html>
