@@ -274,6 +274,113 @@
     .prereq-item strong { display: block; font-size: .88rem; margin-bottom: .15rem; }
     .prereq-item span { color: var(--muted); font-size: .82rem; }
 
+    /* ── Video preview ── */
+    .video-preview-wrap {
+      margin-bottom: 3rem;
+    }
+    .video-preview {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      background: #000;
+      max-height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-preview video {
+      width: 100%;
+      max-height: 320px;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+    .video-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, .45);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      transition: background .2s;
+    }
+    .video-preview:hover .video-overlay {
+      background: rgba(15, 23, 42, .6);
+    }
+    .play-btn {
+      width: 72px; height: 72px;
+      background: rgba(255,255,255,.92);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .18s, background .18s;
+    }
+    .play-btn svg { width: 30px; height: 30px; fill: var(--accent); margin-left: 4px; }
+    .video-preview:hover .play-btn {
+      transform: scale(1.1);
+      background: #fff;
+    }
+    .video-label {
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      text-shadow: 0 1px 6px rgba(0,0,0,.5);
+      letter-spacing: .02em;
+    }
+    .video-sublabel {
+      color: rgba(255,255,255,.75);
+      font-size: .82rem;
+      margin-top: -.5rem;
+    }
+
+    /* ── Video modal ── */
+    .video-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,15,30,.88);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .video-modal.open {
+      display: flex;
+    }
+    .video-modal-inner {
+      position: relative;
+      width: min(92vw, 1100px);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,.6);
+    }
+    .video-modal-inner video {
+      width: 100%;
+      display: block;
+      background: #000;
+      max-height: 85vh;
+    }
+    .modal-close {
+      position: absolute;
+      top: .6rem; right: .7rem;
+      background: rgba(0,0,0,.55);
+      border: none;
+      color: #fff;
+      font-size: 1.4rem;
+      line-height: 1;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10;
+      transition: background .15s;
+    }
+    .modal-close:hover { background: rgba(0,0,0,.8); }
+
     /* ── Footer ── */
     footer {
       text-align: center;
@@ -408,6 +515,29 @@
 
   </div>
 
+  <!-- Video introduttivo -->
+  <p class="section-title">Video introduttivo</p>
+  <div class="video-preview-wrap">
+    <div class="video-preview" onclick="openVideoModal()">
+      <video id="videoThumb" src="Il_Microscopio_WireShark.mp4" preload="metadata" muted playsinline></video>
+      <div class="video-overlay">
+        <div class="play-btn">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+        <div class="video-label">Il Microscopio WireShark</div>
+        <div class="video-sublabel">Clicca per guardare a schermo intero</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal video fullscreen -->
+  <div id="videoModal" class="video-modal" onclick="handleModalClick(event)">
+    <div class="video-modal-inner">
+      <button class="modal-close" onclick="closeVideoModal()" title="Chiudi">&times;</button>
+      <video id="videoFull" src="Il_Microscopio_WireShark.mp4" controls preload="none"></video>
+    </div>
+  </div>
+
   <!-- Nota -->
   <div class="info-box">
     <strong>⚠️ Uso responsabile di WireShark</strong>
@@ -422,5 +552,34 @@
   <p>Tutorial WireShark · Sistemi e Reti – Classe 4 &nbsp;|&nbsp; Realizzato con HTML + SVG</p>
 </footer>
 
+<script>
+  function openVideoModal() {
+    const modal = document.getElementById('videoModal');
+    const video = document.getElementById('videoFull');
+    modal.classList.add('open');
+    video.play();
+    document.addEventListener('keydown', handleEsc);
+  }
+
+  function closeVideoModal() {
+    const modal = document.getElementById('videoModal');
+    const video = document.getElementById('videoFull');
+    modal.classList.remove('open');
+    video.pause();
+    video.currentTime = 0;
+    document.removeEventListener('keydown', handleEsc);
+  }
+
+  function handleModalClick(e) {
+    // Chiudi solo se si clicca sullo sfondo, non sul video o i controlli
+    if (e.target === document.getElementById('videoModal')) {
+      closeVideoModal();
+    }
+  }
+
+  function handleEsc(e) {
+    if (e.key === 'Escape') closeVideoModal();
+  }
+</script>
 </body>
 </html>

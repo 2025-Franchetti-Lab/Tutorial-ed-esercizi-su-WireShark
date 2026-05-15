@@ -297,6 +297,28 @@
       margin: 2.5rem 0;
     }
 
+    /* ── Consegna ── */
+    .deliver-box {
+      background: var(--accent2-lt);
+      border: 2px solid var(--accent2);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.4rem;
+      margin: 1.25rem 0;
+    }
+    .deliver-file {
+      display: flex;
+      align-items: flex-start;
+      gap: .6rem;
+      margin: .55rem 0;
+      font-size: .95rem;
+    }
+    .deliver-file code {
+      background: #fff;
+      border-color: #6ee7b7;
+      color: #065f46;
+      font-weight: 600;
+    }
+
     /* ── Footer ── */
     footer {
       text-align: center;
@@ -327,6 +349,7 @@
     <a href="#dns-esercizio">② DNS – Cattura con WireShark</a>
     <a href="#tracert-teoria">③ Tracert – Come funziona</a>
     <a href="#tracert-esercizio">④ Tracert – Cattura con WireShark</a>
+    <a href="#consegna">⑤ Consegna</a>
   </nav>
 
 
@@ -392,7 +415,7 @@
           <!-- Linee verso Authoritative -->
           <line x1="100" y1="147" x2="80"  y2="200" stroke="#6b7280" stroke-width="1.3" marker-end="url(#arr-dns)"/>
           <line x1="170" y1="147" x2="220" y2="200" stroke="#6b7280" stroke-width="1.3" marker-end="url(#arr-dns)"/>
-          <line x1="350" y1="147" x2="350" y2="200" stroke="#6b7280" stroke-width="1.3" marker-end="url(#arr-dns)"/>
+          <line x1="350" y1="147" x2="423" y2="200" stroke="#6b7280" stroke-width="1.3" marker-end="url(#arr-dns)"/>
 
           <!-- Auth google.com -->
           <rect x="20" y="203" width="145" height="44" rx="8" fill="#e8f0fb" stroke="#1a6fc4"/>
@@ -405,9 +428,9 @@
           <text x="247" y="238" text-anchor="middle" font-size="10" fill="#6b7280">pdns1.ultradns.net</text>
 
           <!-- Auth istruzione.it -->
-          <rect x="275" y="203" width="155" height="44" rx="8" fill="#e8f0fb" stroke="#1a6fc4"/>
-          <text x="352" y="222" text-anchor="middle" font-size="11" font-weight="700" fill="#1a3a6b">Auth. NS istruzione.it</text>
-          <text x="352" y="238" text-anchor="middle" font-size="10" fill="#6b7280">ns1.istruzione.it</text>
+          <rect x="345" y="203" width="155" height="44" rx="8" fill="#e8f0fb" stroke="#1a6fc4"/>
+          <text x="423" y="222" text-anchor="middle" font-size="11" font-weight="700" fill="#1a3a6b">Auth. NS istruzione.it</text>
+          <text x="423" y="238" text-anchor="middle" font-size="10" fill="#6b7280">ns1.istruzione.it</text>
         </g>
       </svg>
       <p class="diagram-caption">Fig. 1 – Gerarchia del DNS: da Root Server agli Authoritative Name Server</p>
@@ -1136,6 +1159,65 @@
       </ol>
     </div>
   </section>
+
+
+  <!-- ══════ SEZIONE 5 – CONSEGNA ══════ -->
+  <section class="section" id="consegna">
+    <div class="section-header">
+      <div class="section-icon icon-green">📤</div>
+      <h2>5 · Consegna degli esercizi</h2>
+    </div>
+
+    <p>
+      Al termine di ciascun tutorial salvate la relativa cattura WireShark nel formato <strong>.pcapng</strong>
+      seguendo la procedura descritta nel Tutorial 1 (File → Save As… → formato pcapng).
+      Per questo tutorial dovete consegnare <strong>due file separati</strong>: uno per l'esercizio DNS
+      e uno per l'esercizio Tracert.
+    </p>
+
+    <h3>File da consegnare</h3>
+
+    <div class="deliver-box">
+      <div class="deliver-file">
+        <span>📄</span>
+        <div>
+          <code>cognome_nome_02_dns.pcapng</code><br/>
+          <span style="font-size:.88rem; color:var(--muted);">
+            Cattura dell'esercizio DNS — deve contenere almeno una coppia
+            <em>Standard query</em> / <em>Standard query response</em> visibile con il filtro <code>dns</code>,
+            con la sezione <strong>Answers</strong> che mostra l'indirizzo IP risolto e il TTL.
+          </span>
+        </div>
+      </div>
+      <div class="deliver-file" style="margin-top:.85rem;">
+        <span>📄</span>
+        <div>
+          <code>cognome_nome_02_tracert.pcapng</code><br/>
+          <span style="font-size:.88rem; color:var(--muted);">
+            Cattura dell'esercizio Tracert — deve contenere i pacchetti
+            <em>ICMP Echo Request</em> con TTL crescente, i messaggi <em>ICMP Time-to-live exceeded</em>
+            dei router intermedi e l'<em>ICMP Echo Reply</em> finale da <code>8.8.8.8</code>,
+            visibili con il filtro <code>icmp</code>.
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>📌 Come consegnare i file</strong>
+      Caricate entrambi i file <code>.pcapng</code> sulla piattaforma indicata dal docente
+      (registro elettronico, cartella condivisa, e-mail, ecc.).
+      Assicuratevi che i nomi rispettino la convenzione indicata e che i due file siano distinti.
+    </div>
+
+    <div class="warn-box">
+      <strong>⚠️ Salvate ogni cattura separatamente!</strong>
+      Per poter consegnare due file distinti è necessario avviare due catture separate in WireShark:
+      una durante l'esercizio DNS e una durante l'esercizio Tracert.
+      Salvate ciascuna cattura prima di avviare la successiva.
+    </div>
+  </section>
+
 
 </div><!-- /page-wrap -->
 

@@ -251,6 +251,48 @@
       margin-top: 1.25rem;
     }
 
+    /* ── Consegna ── */
+    .deliver-box {
+      background: var(--accent2-lt);
+      border: 2px solid var(--accent2);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.4rem;
+      margin: 1.25rem 0;
+    }
+    .deliver-box p { margin-bottom: .4rem; }
+    .deliver-file {
+      display: flex;
+      align-items: flex-start;
+      gap: .6rem;
+      margin: .55rem 0;
+      font-size: .95rem;
+    }
+    .deliver-file code {
+      background: #fff;
+      border-color: #6ee7b7;
+      color: #065f46;
+      font-weight: 600;
+    }
+    .save-step {
+      display: flex;
+      gap: .85rem;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    .save-step-num {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      min-width: 26px; height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: .1rem;
+    }
+    .save-step-body { flex: 1; }
+    .save-step-body strong { display: block; margin-bottom: .2rem; }
+
     /* ── Footer ── */
     footer {
       text-align: center;
@@ -282,6 +324,7 @@
     <a href="#installazione">③ Installazione (Windows)</a>
     <a href="#configurazione">④ Configurazione iniziale</a>
     <a href="#esercizio">⑤ Esercizio base</a>
+    <a href="#consegna">⑥ Consegna</a>
   </nav>
 
 
@@ -810,6 +853,138 @@
       </ol>
     </div>
   </section>
+
+
+  <!-- ══════ SEZIONE 6 – CONSEGNA ══════ -->
+  <section class="section" id="consegna">
+    <div class="section-header">
+      <div class="section-icon icon-green">📤</div>
+      <h2>6 · Consegna dell'esercizio</h2>
+    </div>
+
+    <p>
+      Al termine dell'esercizio dovete salvare la cattura eseguita con WireShark e consegnare il file
+      al docente secondo le modalità indicate.
+    </p>
+
+    <!-- Salvataggio cattura -->
+    <h3>Come salvare la cattura in WireShark</h3>
+    <p>
+      WireShark salva le catture in formato <strong>.pcapng</strong> (il formato standard internazionale
+      per la cattura di pacchetti). Seguite questi passaggi:
+    </p>
+
+    <div style="margin: 1rem 0 1.5rem;">
+      <div class="save-step">
+        <div class="save-step-num">1</div>
+        <div class="save-step-body">
+          <strong>Fermate la cattura</strong>
+          Se non lo avete già fatto, premete il pulsante <strong>■ Stop</strong> nella barra degli strumenti
+          oppure usate la scorciatoia <code>Ctrl + E</code>.
+        </div>
+      </div>
+      <div class="save-step">
+        <div class="save-step-num">2</div>
+        <div class="save-step-body">
+          <strong>Aprite la finestra di salvataggio</strong>
+          Dal menu in alto: <strong>File → Save As…</strong> oppure premete <code>Ctrl + Shift + S</code>.
+        </div>
+      </div>
+      <div class="save-step">
+        <div class="save-step-num">3</div>
+        <div class="save-step-body">
+          <strong>Scegliete la cartella di destinazione</strong>
+          Salvate il file in una cartella facilmente accessibile, ad esempio il Desktop o la cartella
+          dei documenti scolastici.
+        </div>
+      </div>
+      <div class="save-step">
+        <div class="save-step-num">4</div>
+        <div class="save-step-body">
+          <strong>Assegnate il nome corretto al file</strong>
+          Nel campo <em>Nome file</em> inserite il nome seguendo la convenzione:
+          <pre style="margin:.5rem 0">cognome_nome_01_ping_loopback</pre>
+          Esempio: <code>rossi_mario_01_ping_loopback</code>
+        </div>
+      </div>
+      <div class="save-step">
+        <div class="save-step-num">5</div>
+        <div class="save-step-body">
+          <strong>Verificate il formato e salvate</strong>
+          Nel menu a discesa <em>Salva come</em> lasciate la voce predefinita:
+          <strong>Wireshark/tcpdump/… – pcapng</strong>.
+          Cliccate <strong>Salva</strong>: il file verrà creato con estensione <code>.pcapng</code>.
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagramma salvataggio -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 680 110" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pipeline salvataggio cattura">
+        <defs>
+          <marker id="arr-s" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#0e9e6e"/>
+          </marker>
+        </defs>
+        <g font-family="'Segoe UI',sans-serif" font-size="12">
+          <rect x="10"  y="30" width="120" height="50" rx="8" fill="#e8f0fb" stroke="#1a6fc4"/>
+          <text x="70"  y="52" text-anchor="middle" font-weight="600" fill="#1a3a6b">Cattura</text>
+          <text x="70"  y="68" text-anchor="middle" font-size="10" fill="#374151">■ Stop (Ctrl+E)</text>
+
+          <line x1="133" y1="55" x2="168" y2="55" stroke="#0e9e6e" stroke-width="1.8" marker-end="url(#arr-s)"/>
+
+          <rect x="171" y="30" width="145" height="50" rx="8" fill="#e6f7f1" stroke="#0e9e6e"/>
+          <text x="243" y="52" text-anchor="middle" font-weight="600" fill="#065f46">File → Save As…</text>
+          <text x="243" y="68" text-anchor="middle" font-size="10" fill="#374151">Ctrl + Shift + S</text>
+
+          <line x1="319" y1="55" x2="354" y2="55" stroke="#0e9e6e" stroke-width="1.8" marker-end="url(#arr-s)"/>
+
+          <rect x="357" y="30" width="155" height="50" rx="8" fill="#e6f7f1" stroke="#0e9e6e"/>
+          <text x="434" y="48" text-anchor="middle" font-weight="600" fill="#065f46">Nome file</text>
+          <text x="434" y="64" text-anchor="middle" font-size="10" fill="#374151">cognome_nome_01_ping_loopback</text>
+
+          <line x1="515" y1="55" x2="550" y2="55" stroke="#0e9e6e" stroke-width="1.8" marker-end="url(#arr-s)"/>
+
+          <rect x="553" y="22" width="117" height="66" rx="8" fill="#d1fae5" stroke="#059669"/>
+          <text x="611" y="48" text-anchor="middle" font-weight="700" fill="#065f46">📄 .pcapng</text>
+          <text x="611" y="64" text-anchor="middle" font-size="10" fill="#374151">file pronto</text>
+          <text x="611" y="78" text-anchor="middle" font-size="10" fill="#374151">per la consegna</text>
+        </g>
+      </svg>
+      <p class="diagram-caption">Fig. 5 – Flusso per salvare la cattura in formato .pcapng</p>
+    </div>
+
+    <div class="warn-box">
+      <strong>⚠️ Non chiudere WireShark prima di aver salvato!</strong>
+      Se chiudete WireShark senza salvare, tutti i pacchetti catturati vengono persi definitivamente.
+      Salvate sempre prima di chiudere il programma.
+    </div>
+
+    <!-- File da consegnare -->
+    <h3>File da consegnare</h3>
+    <p>Per questo esercizio consegnate il seguente file al docente:</p>
+
+    <div class="deliver-box">
+      <div class="deliver-file">
+        <span>📄</span>
+        <div>
+          <code>cognome_nome_01_ping_loopback.pcapng</code><br/>
+          <span style="font-size:.88rem; color:var(--muted);">
+            Cattura WireShark del traffico ICMP sull'interfaccia loopback — deve contenere
+            almeno 8 pacchetti (4 Echo Request + 4 Echo Reply) visibili con il filtro <code>icmp</code>.
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>📌 Come consegnare il file</strong>
+      Caricate il file <code>.pcapng</code> sulla piattaforma indicata dal docente
+      (registro elettronico, cartella condivisa, e-mail, ecc.).
+      Assicuratevi che il nome del file rispetti la convenzione indicata.
+    </div>
+  </section>
+
 
 </div><!-- /page-wrap -->
 
